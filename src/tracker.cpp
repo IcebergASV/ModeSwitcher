@@ -29,7 +29,7 @@ private:
         RCLCPP_INFO(this->get_logger(), "Waypoint Reached: %d, Total Completed: %d", msg->wp_seq, wp_completed_count_);
 
         // Compare wp_seq with the input number
-        if (wp_completed_count_ == target_wp_)
+        if (wp_completed_count_ >= target_wp_)
         {
             RCLCPP_INFO(this->get_logger(), "Switching to Guided");
             switchToGuided();
@@ -39,11 +39,9 @@ private:
     void switchToGuided()
     {
         // Create request
-        RCLCPP_INFO(this->get_logger(), "A");
         auto request = std::make_shared<mavros_msgs::srv::SetMode::Request>();
         //request->base_mode = 0;  // Not used in ROS 2
         request->custom_mode = "GUIDED";
-        RCLCPP_INFO(this->get_logger(), "B");
 
         // Send request asynchronously
         auto future = mode_change_client_->async_send_request(request, 
@@ -58,7 +56,6 @@ private:
                     RCLCPP_ERROR(this->get_logger(), "Service call failed: %s", e.what());
                 }
     });
-    RCLCPP_INFO(this->get_logger(), "C");
     }
 
     int target_wp_;  // The input waypoint number to compare against
