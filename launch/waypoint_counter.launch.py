@@ -1,6 +1,7 @@
 import launch
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, LogInfo, Node
+from launch_ros.actions import Node
+from launch.actions import DeclareLaunchArgument, LogInfo
 from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
