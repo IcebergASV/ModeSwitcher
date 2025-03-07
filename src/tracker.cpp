@@ -12,7 +12,7 @@ public:
         RCLCPP_INFO(this->get_logger(), "Total Waypoints: %d", target_wp_);
 
         // Create the service client for /mavros/set_mode
-        set_mode_client_ = this->create_client<mavros_msgs::srv::SetMode>("/mavros/set_mode");
+        mode_change_client_ = this->create_client<mavros_msgs::srv::SetMode>("/mavros/set_mode");
 
         // Subscribe to MAVROS waypoint reached topic
         wp_reached_sub_ = this->create_subscription<mavros_msgs::msg::WaypointReached>(
@@ -29,7 +29,7 @@ private:
         RCLCPP_INFO(this->get_logger(), "Waypoint Reached: %d, Total Completed: %d", msg->wp_seq, wp_completed_count_);
 
         // Compare wp_seq with the input number
-        if (msg->wp_seq == target_wp_)
+        if (wp_completed_count_ == target_wp_)
         {
             RCLCPP_INFO(this->get_logger(), "Switching to Guided");
             switchToGuided();
@@ -39,9 +39,11 @@ private:
     void switchToGuided()
     {
         // Create request
+        RCLCPP_INFO(this->get_logger(), "A");
         auto request = std::make_shared<mavros_msgs::srv::SetMode::Request>();
-        request->base_mode = 0;  // Not used in ROS 2
+        //request->base_mode = 0;  // Not used in ROS 2
         request->custom_mode = "GUIDED";
+        RCLCPP_INFO(this->get_logger(), "B");
 
         // Send request asynchronously
         auto future = mode_change_client_->async_send_request(request, 
@@ -56,12 +58,12 @@ private:
                     RCLCPP_ERROR(this->get_logger(), "Service call failed: %s", e.what());
                 }
     });
+    RCLCPP_INFO(this->get_logger(), "C");
     }
 
     int target_wp_;  // The input waypoint number to compare against
     int wp_completed_count_;  // Stores the count of waypoints reached
     rclcpp::Subscription<mavros_msgs::msg::WaypointReached>::SharedPtr wp_reached_sub_;
-    rclcpp::Client<mavros_msgs::srv::SetMode>::SharedPtr set_mode_client_;  // Service client for set_mode
     rclcpp::Client<mavros_msgs::srv::SetMode>::SharedPtr mode_change_client_;
 };
 
